@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Check, X, ArrowRight } from 'lucide-react';
+import { Check, X, ArrowRight, ArrowDown } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -69,25 +69,25 @@ const ApprovalItemsModal = ({ isOpen, onClose, atendimentoId }: ApprovalItemsMod
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Item Estoque
-                      <span className="ml-1 text-gray-400">↓</span>
+                      <ArrowDown className="inline ml-1 w-3 h-3 text-gray-400" />
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Descrição
-                      <span className="ml-1 text-gray-400">↓</span>
+                      <ArrowDown className="inline ml-1 w-3 h-3 text-gray-400" />
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Quantidade
-                      <span className="ml-1 text-gray-400">↓</span>
+                      <ArrowDown className="inline ml-1 w-3 h-3 text-gray-400" />
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Valor Unitário
-                      <span className="ml-1 text-gray-400">↓</span>
+                      <ArrowDown className="inline ml-1 w-3 h-3 text-gray-400" />
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Situação
-                      <span className="ml-1 text-gray-400">↓</span>
+                      <ArrowDown className="inline ml-1 w-3 h-3 text-gray-400" />
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Ação
