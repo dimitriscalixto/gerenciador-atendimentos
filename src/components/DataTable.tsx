@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Check, X } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
-interface TableRow {
+export interface TableRow {
   id: string;
   notificacao: string;
   atendimento: string;
@@ -37,10 +37,19 @@ const mockData: TableRow[] = Array.from({ length: 15 }, (_, i) => ({
 
 interface DataTableProps {
   className?: string;
+  onAddRow?: (row: TableRow) => void;
 }
 
-const DataTable = ({ className }: DataTableProps) => {
-  const [data] = useState<TableRow[]>(mockData);
+const DataTable = ({ className, onAddRow }: DataTableProps) => {
+  const [data, setData] = useState<TableRow[]>(mockData);
+  
+  // Método para adicionar uma nova linha à tabela
+  const addRow = (newRow: TableRow) => {
+    setData(prevData => [newRow, ...prevData]);
+    if (onAddRow) {
+      onAddRow(newRow);
+    }
+  };
   
   const StatusIcon = ({ status }: { status: boolean }) => {
     if (status) {
@@ -77,7 +86,8 @@ const DataTable = ({ className }: DataTableProps) => {
               <th className={headerClasses}>Cliente</th>
               <th className={headerClasses}>Solicitante</th>
               <th className={headerClasses}>Data Criada</th>
-              <th className={headerClasses}>Em Andamento Aguardando Aprovação</th>
+              <th className={headerClasses}>Em Andamento</th>
+              <th className={headerClasses}>Aguardando Aprovação</th>
               <th className={headerClasses}>Autorizada</th>
               <th className={headerClasses}>Entrega Mecânico</th>
               <th className={headerClasses}>Faturamento</th>
@@ -87,7 +97,7 @@ const DataTable = ({ className }: DataTableProps) => {
             {data.map((row) => (
               <tr 
                 key={row.id} 
-                className="table-row border-b border-gray-100 last:border-0 group"
+                className="table-row border-b border-gray-100 last:border-0 group hover:bg-gray-50"
               >
                 <td className={cellClasses}>{row.notificacao}</td>
                 <td className={cellClasses}>{row.atendimento}</td>

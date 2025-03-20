@@ -1,12 +1,35 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Header from '@/components/Header';
-import DataTable from '@/components/DataTable';
+import DataTable, { TableRow } from '@/components/DataTable';
 
 const Index = () => {
+  const [tableData, setTableData] = useState<TableRow[]>([]);
+
+  const handleAddAtendimento = (atendimento: any) => {
+    // Criar um novo objeto de linha para a tabela
+    const newRow: TableRow = {
+      id: `new-${Date.now()}`,
+      notificacao: atendimento.notificacao || '',
+      atendimento: atendimento.atendimento || '',
+      os: atendimento.os || '',
+      placa: atendimento.placa || '',
+      cliente: atendimento.cliente || '',
+      solicitante: atendimento.solicitante || '',
+      dataCriada: atendimento.dataCriada || new Date().toLocaleDateString(),
+      emAndamento: atendimento.emAndamento || false,
+      aguardandoAprovacao: atendimento.aguardandoAprovacao || false,
+      autorizada: atendimento.autorizada || false,
+      envioMecanico: atendimento.envioMecanico || false,
+      faturamento: atendimento.faturamento || false,
+    };
+    
+    setTableData(prev => [newRow, ...prev]);
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 animate-fade-in">
-      <Header />
+      <Header onAddAtendimento={handleAddAtendimento} />
       
       <main className="flex-1 w-full p-4 md:p-6">
         <div className="max-w-full mx-auto">
