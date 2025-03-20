@@ -3,27 +3,15 @@ import React, { useState } from 'react';
 import { Search, Plus } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import AddAtendimentoModal from './AddAtendimentoModal';
+import type { TableRow } from './DataTable';
 
 interface HeaderProps {
   className?: string;
-  onAddAtendimento: (atendimento: any) => void;
+  onAddAtendimento: (atendimento: TableRow) => void;
 }
 
-const Header = ({ className, onAddAtendimento }: HeaderProps) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
-
-  const handleAtendimentoSelect = (atendimento: any) => {
-    onAddAtendimento(atendimento);
-    handleCloseModal();
-  };
+const Header = ({ className}: HeaderProps) => {
+ 
 
   return (
     <header className={cn("w-full bg-marco-blue py-2 px-4 flex items-center justify-between", className)}>
@@ -32,34 +20,6 @@ const Header = ({ className, onAddAtendimento }: HeaderProps) => {
           <span className="text-marco-blue font-bold text-lg">MarcoDiesel</span>
         </div>
       </div>
-      
-      <div className="flex-1 max-w-md mx-auto">
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Pesquisar..."
-            className="search-bar w-full px-4 py-2 rounded-md border border-gray-300 
-                     focus:outline-none focus:ring-2 focus:ring-marco-blue/20 pl-10 animate-fade-in"
-          />
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-        </div>
-      </div>
-      
-      <div>
-        <button 
-          className="bg-white hover:bg-gray-50 p-2 rounded-full transition-all duration-200 
-                   hover:shadow-md group flex items-center justify-center"
-          onClick={handleOpenModal}
-        >
-          <Plus className="w-5 h-5 text-marco-blue group-hover:scale-110 transition-transform duration-200" />
-        </button>
-      </div>
-
-      <AddAtendimentoModal 
-        isOpen={isModalOpen} 
-        onClose={handleCloseModal} 
-        onSelectAtendimento={handleAtendimentoSelect}
-      />
     </header>
   );
 };

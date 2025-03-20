@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { Check, X } from 'lucide-react';
 import { cn } from "@/lib/utils";
+import { table } from 'console';
+import { AprovarItemsModal } from './ApprovarItemsModal';
 
 export interface TableRow {
   id: string;
@@ -21,7 +23,7 @@ export interface TableRow {
 
 const mockData: TableRow[] = Array.from({ length: 15 }, (_, i) => ({
   id: `row-${i + 1}`,
-  notificacao: `Notificação ${i + 1}`,
+  notificacao: `Solicitação ${i + 1}`,
   atendimento: `Atendimento ${i + 1}`,
   os: `OS ${i + 101}`,
   placa: `Placa ${String.fromCharCode(65 + (i % 26))}${String.fromCharCode(65 + ((i + 5) % 26))}${Math.floor(Math.random() * 9000) + 1000}`,
@@ -38,11 +40,12 @@ const mockData: TableRow[] = Array.from({ length: 15 }, (_, i) => ({
 interface DataTableProps {
   className?: string;
   onAddRow?: (row: TableRow) => void;
+  tableData: TableRow[];
 }
 
-const DataTable = ({ className, onAddRow }: DataTableProps) => {
+const DataTable = ({ className, onAddRow, tableData }: DataTableProps) => {
   const [data, setData] = useState<TableRow[]>(mockData);
-  
+  const [isAprovarModalOpen, setIsAprovarModalOpen] = useState(false);
   // Método para adicionar uma nova linha à tabela
   const addRow = (newRow: TableRow) => {
     setData(prevData => [newRow, ...prevData]);
@@ -50,12 +53,14 @@ const DataTable = ({ className, onAddRow }: DataTableProps) => {
       onAddRow(newRow);
     }
   };
-  
-  const StatusIcon = ({ status }: { status: boolean }) => {
+  const handleOpenAprovarItemModal = () => {
+    setIsAprovarModalOpen(true);
+  }
+  const StatusIcon = ({ status, onClick }: { status: boolean, onClick?: () => void }) => {
     if (status) {
       return (
         <div className="flex justify-center">
-          <div className="status-icon bg-marco-success/10 p-1 rounded-full">
+          <div className="status-icon bg-marco-success/10 p-1 rounded-full" onClick={onClick}>
             <Check className="w-4 h-4 text-marco-success" />
           </div>
         </div>
@@ -63,13 +68,13 @@ const DataTable = ({ className, onAddRow }: DataTableProps) => {
     }
     return (
       <div className="flex justify-center">
-        <div className="status-icon bg-marco-error/10 p-1 rounded-full">
+        <div className="status-icon bg-marco-error/10 p-1 rounded-full" onClick={onClick}>
           <X className="w-4 h-4 text-marco-error" />
         </div>
       </div>
     );
   };
-  
+
   const headerClasses = "py-3 px-4 text-sm font-medium text-gray-700 border-b";
   const cellClasses = "py-3 px-4 text-sm text-gray-600 border-b";
 
@@ -79,7 +84,7 @@ const DataTable = ({ className, onAddRow }: DataTableProps) => {
         <table className="min-w-full bg-white shadow-sm">
           <thead>
             <tr className="bg-gray-50">
-              <th className={headerClasses}>N Notificação</th>
+              <th className={headerClasses}>N Solicitação</th>
               <th className={headerClasses}>Atendimento</th>
               <th className={headerClasses}>O.S.</th>
               <th className={headerClasses}>Placa</th>
@@ -94,9 +99,9 @@ const DataTable = ({ className, onAddRow }: DataTableProps) => {
             </tr>
           </thead>
           <tbody>
-            {data.map((row) => (
-              <tr 
-                key={row.id} 
+            {tableData.map((row) => (
+              <tr
+                key={row.id}
                 className="table-row border-b border-gray-100 last:border-0 group hover:bg-gray-50"
               >
                 <td className={cellClasses}>{row.notificacao}</td>
@@ -110,7 +115,7 @@ const DataTable = ({ className, onAddRow }: DataTableProps) => {
                   <StatusIcon status={row.emAndamento} />
                 </td>
                 <td className={cellClasses}>
-                  <StatusIcon status={row.aguardandoAprovacao} />
+                  <StatusIcon status={row.aguardandoAprovacao} onClick={handleOpenAprovarItemModal} />
                 </td>
                 <td className={cellClasses}>
                   <StatusIcon status={row.autorizada} />
@@ -126,6 +131,9 @@ const DataTable = ({ className, onAddRow }: DataTableProps) => {
           </tbody>
         </table>
       </div>
+      <AprovarItemsModal isOpen={isAprovarModalOpen} onClose={() => {
+        setIsAprovarModalOpen(false);
+      }} />
     </div>
   );
 };

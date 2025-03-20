@@ -38,31 +38,25 @@ interface AddAtendimentoModalProps {
 const AddAtendimentoModal = ({ isOpen, onClose, onSelectAtendimento }: AddAtendimentoModalProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredResults, setFilteredResults] = useState<Atendimento[]>([]);
-  
+
   const handleSearch = (value: string) => {
     setSearchQuery(value);
-    
-    if (value.trim() === '') {
-      setFilteredResults([]);
+
+    if (!value.trim()) {
+      setFilteredResults([]); // Ou null para evitar o erro de iteração
       return;
     }
-    
-    // Filtrar os atendimentos baseados na consulta
-    const results = mockAtendimentos.filter(item => 
+
+    const results = mockAtendimentos.filter(item =>
       item.atendimento.toLowerCase().includes(value.toLowerCase())
     );
-    
+
     setFilteredResults(results);
   };
 
   const handleSelectItem = (atendimento: Atendimento) => {
     onSelectAtendimento({
       ...atendimento,
-      emAndamento: true,
-      aguardandoAprovacao: false,
-      autorizada: false,
-      envioMecanico: false,
-      faturamento: false
     });
   };
 
@@ -72,24 +66,29 @@ const AddAtendimentoModal = ({ isOpen, onClose, onSelectAtendimento }: AddAtendi
         <DialogHeader>
           <DialogTitle>Adicionar Atendimento</DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           <p className="text-sm text-gray-500">
             Digite o número do atendimento para buscar e adicionar à tabela.
           </p>
-          
+
           <div className="flex items-center space-x-2">
             <div className="relative flex-1">
               <Command className="rounded-lg border shadow-md">
-                <CommandInput 
-                  placeholder="Buscar número de atendimento..." 
+                <CommandInput
+                  placeholder="Buscar número de atendimento..."
                   value={searchQuery}
                   onValueChange={handleSearch}
                 />
-                
-                {filteredResults.length > 0 && (
-                  <CommandList>
+
+                <CommandList>
+                  {/* Mostra "Nenhum resultado encontrado" quando filteredResults for um array vazio */}
+                  {filteredResults.length === 0 && searchQuery.trim() !== '' && (
                     <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>
+                  )}
+
+                  {/* Exibe os resultados quando houver itens */}
+                  {filteredResults.length > 0 && (
                     <CommandGroup heading="Resultados">
                       {filteredResults.map((item) => (
                         <CommandItem
@@ -106,13 +105,13 @@ const AddAtendimentoModal = ({ isOpen, onClose, onSelectAtendimento }: AddAtendi
                         </CommandItem>
                       ))}
                     </CommandGroup>
-                  </CommandList>
-                )}
+                  )}
+                </CommandList>
               </Command>
             </div>
           </div>
         </div>
-        
+
         <DialogFooter className="sm:justify-start">
           <Button variant="secondary" onClick={onClose}>
             Cancelar
