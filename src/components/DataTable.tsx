@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Check, X } from 'lucide-react';
 import { cn } from "@/lib/utils";
+import ApprovalItemsModal from './ApprovalItemsModal';
 
 export interface TableRow {
   id: string;
@@ -42,6 +43,8 @@ interface DataTableProps {
 
 const DataTable = ({ className, onAddRow }: DataTableProps) => {
   const [data, setData] = useState<TableRow[]>(mockData);
+  const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
+  const [selectedAtendimentoId, setSelectedAtendimentoId] = useState<string | undefined>(undefined);
   
   // Método para adicionar uma nova linha à tabela
   const addRow = (newRow: TableRow) => {
@@ -51,11 +54,23 @@ const DataTable = ({ className, onAddRow }: DataTableProps) => {
     }
   };
   
-  const StatusIcon = ({ status }: { status: boolean }) => {
+  const handleApprovalClick = (rowId: string) => {
+    setSelectedAtendimentoId(rowId);
+    setIsApprovalModalOpen(true);
+  };
+  
+  const StatusIcon = ({ status, onClick, clickable = false }: { status: boolean, onClick?: () => void, clickable?: boolean }) => {
+    const containerClasses = clickable && status 
+      ? "cursor-pointer hover:bg-gray-100 rounded-full p-1 transition-colors" 
+      : "flex justify-center";
+      
     if (status) {
       return (
         <div className="flex justify-center">
-          <div className="status-icon bg-marco-success/10 p-1 rounded-full">
+          <div 
+            className={cn("status-icon bg-marco-success/10 p-1 rounded-full", clickable && "cursor-pointer hover:bg-marco-success/20")}
+            onClick={onClick}
+          >
             <Check className="w-4 h-4 text-marco-success" />
           </div>
         </div>
@@ -110,7 +125,11 @@ const DataTable = ({ className, onAddRow }: DataTableProps) => {
                   <StatusIcon status={row.emAndamento} />
                 </td>
                 <td className={cellClasses}>
-                  <StatusIcon status={row.aguardandoAprovacao} />
+                  <StatusIcon 
+                    status={row.aguardandoAprovacao} 
+                    clickable={true}
+                    onClick={() => row.aguardandoAprovacao && handleApprovalClick(row.id)}
+                  />
                 </td>
                 <td className={cellClasses}>
                   <StatusIcon status={row.autorizada} />
@@ -126,6 +145,15 @@ const DataTable = ({ className, onAddRow }: DataTableProps) => {
           </tbody>
         </table>
       </div>
+      
+      <ApprovalItemsModal 
+        isOpen={isApprovalModalOpen}
+        onClose={() => {
+          setIsApprovalModalOpen(false);
+          setSelectedAtendimentoId(undefined);
+        }}
+        atendimentoId={selectedAtendimentoId}
+      />
     </div>
   );
 };

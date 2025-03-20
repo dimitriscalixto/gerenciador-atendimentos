@@ -17,11 +17,11 @@ const Index = () => {
       cliente: atendimento.cliente || '',
       solicitante: atendimento.solicitante || '',
       dataCriada: atendimento.dataCriada || new Date().toLocaleDateString(),
-      emAndamento: atendimento.emAndamento || false,
-      aguardandoAprovacao: atendimento.aguardandoAprovacao || false,
-      autorizada: atendimento.autorizada || false,
-      envioMecanico: atendimento.envioMecanico || false,
-      faturamento: atendimento.faturamento || false,
+      emAndamento: true, // Set to true by default for new entries
+      aguardandoAprovacao: false,
+      autorizada: false,
+      envioMecanico: false,
+      faturamento: false,
     };
     
     setTableData(prev => [newRow, ...prev]);
