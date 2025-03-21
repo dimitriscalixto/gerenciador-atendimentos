@@ -2,8 +2,7 @@
 import React, { useState } from 'react';
 import { Check, X } from 'lucide-react';
 import { cn } from "@/lib/utils";
-import { AprovarItemsModal } from './ApprovarItemsModal';
-import { ApprovalItem } from '@/pages/Index';
+import ApprovalItemsModal from './ApprovalItemsModal';
 
 export interface TableRow {
   id: string;
@@ -148,16 +147,6 @@ const DataTable = ({ className, onAddRow, tableData, onApprovalClick }: DataTabl
           </tbody>
         </table>
       </div>
-      <AprovarItemsModal 
-        isOpen={isAprovarModalOpen} 
-        onClose={() => {
-          setIsAprovarModalOpen(false);
-        }}
-        onAddItem={(item) => {
-          // We'll pass this function to handle adding items when needed
-          console.log("Adding item:", item);
-        }}
-      />
     </div>
   );
 };

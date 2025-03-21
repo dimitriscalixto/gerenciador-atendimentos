@@ -23,6 +23,8 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
     descricao: '',
     qtd: '1',
   });
+  const [search, setSearch] = useState('');
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -104,10 +106,10 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
       situacao: "Novo",
     },
   ];
-
+  const filteredItems = mockAutopecas.filter((item) => item.descricao.includes(search));
   const handleSubmitManual = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Create a new item from form data
     const newItem: ApprovalItem = {
       id: `item-${Date.now()}`,
@@ -118,10 +120,10 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
       situacao: 'Aguardando',
       acao: 'Pendente',
     };
-    
+
     // Add the item to the shared state
     onAddItem(newItem);
-    
+
     // Reset form and close modal
     setFormData({
       codigo: '',
@@ -143,7 +145,7 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
       situacao: item.situacao,
       acao: 'Pendente',
     };
-    
+
     // Add the item to the shared state
     onAddItem(newItem);
     onClose();
@@ -152,12 +154,9 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-7xl h-[600px] flex flex-col">
-        {/* Cabeçalho do modal */}
         <DialogHeader>
           <DialogTitle className="text-xl font-medium">Adicionar Item</DialogTitle>
         </DialogHeader>
-
-        {/* Tabs fixas */}
         <Tabs defaultValue="manual" value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col flex-grow">
           <TabsList className="grid grid-cols-3 mb-4">
             <TabsTrigger value="manual">MANUAL</TabsTrigger>
@@ -176,9 +175,9 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
                   <div className="space-y-4">
                     <div>
                       <Label htmlFor="codigo">Código *</Label>
-                      <Input 
-                        id="codigo" 
-                        required 
+                      <Input
+                        id="codigo"
+                        required
                         value={formData.codigo}
                         onChange={handleInputChange}
                       />
@@ -186,9 +185,9 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
 
                     <div>
                       <Label htmlFor="marca">Marca *</Label>
-                      <Input 
-                        id="marca" 
-                        required 
+                      <Input
+                        id="marca"
+                        required
                         value={formData.marca}
                         onChange={handleInputChange}
                       />
@@ -196,9 +195,9 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
 
                     <div>
                       <Label htmlFor="descricao">Descrição *</Label>
-                      <Input 
-                        id="descricao" 
-                        required 
+                      <Input
+                        id="descricao"
+                        required
                         value={formData.descricao}
                         onChange={handleInputChange}
                       />
@@ -206,10 +205,10 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
 
                     <div>
                       <Label htmlFor="qtd">Qtd *</Label>
-                      <Input 
-                        id="qtd" 
-                        type="number" 
-                        required 
+                      <Input
+                        id="qtd"
+                        type="number"
+                        required
                         value={formData.qtd}
                         onChange={handleInputChange}
                       />
@@ -229,7 +228,7 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
                 <div className="mb-4">
                   <h3 className="text-sm font-medium mb-4">Selecione o item cadastrado:</h3>
                   <div className="flex items-center space-x-2 mb-4">
-                    <Input id="searchItemGeneral" placeholder="Pesquisar item..." className="flex-grow" />
+                    <Input onChange={(e) => setSearch(e.target.value)} id="searchItemGeneral" placeholder="Pesquisar item..." className="flex-grow" />
                     <Button type="button" className="bg-gray-300 hover:bg-gray-400 text-black px-4">
                       <Search />
                     </Button>
@@ -265,11 +264,11 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
                         </tr>
                       </thead>
                       <tbody>
-                        {mockAutopecas.length > 0 ? (
-                          mockAutopecas.map((item) => (
-                            <tr 
-                              key={item.id} 
-                              className="hover:bg-gray-100 cursor-pointer" 
+                        {filteredItems.length > 0 ? (
+                          filteredItems.map((item) => (
+                            <tr
+                              key={item.id}
+                              className="hover:bg-gray-100 cursor-pointer"
                               onClick={() => handleSelectCadastradoItem(item)}
                             >
                               <td className="border px-2 py-1">{item.validacao}</td>
@@ -296,8 +295,8 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
                   </div>
                 </div>
 
-                <Button 
-                  type="button" 
+                <Button
+                  type="button"
                   className="w-full bg-blue-900 hover:bg-blue-800 text-white py-2 uppercase"
                   onClick={onClose}
                 >
@@ -311,7 +310,7 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
                 <div className="mb-4">
                   <h3 className="text-sm font-medium mb-4">Selecione o item cadastrado:</h3>
                   <div className="flex items-center space-x-2 mb-4">
-                    <Input id="searchItemGeneral" placeholder="Pesquisar item..." className="flex-grow" />
+                    <Input onChange={(e) => setSearch(e.target.value)} id="searchItemGeneral" placeholder="Pesquisar item..." className="flex-grow" />
                     <Button type="button" className="bg-gray-300 hover:bg-gray-400 text-black px-4">
                       <Search />
                     </Button>
@@ -349,10 +348,10 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
                         </tr>
                       </thead>
                       <tbody>
-                        {mockAutopecas.length > 0 ? (
-                          mockAutopecas.map((item) => (
-                            <tr 
-                              key={item.id} 
+                        {filteredItems.length > 0 ? (
+                          filteredItems.map((item) => (
+                            <tr
+                              key={item.id}
                               className="hover:bg-gray-100 cursor-pointer"
                               onClick={() => handleSelectCadastradoItem(item)}
                             >
@@ -381,8 +380,8 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
                   </div>
                 </div>
 
-                <Button 
-                  type="button" 
+                <Button
+                  type="button"
                   className="w-full bg-blue-900 hover:bg-blue-800 text-white py-2 uppercase"
                   onClick={onClose}
                 >

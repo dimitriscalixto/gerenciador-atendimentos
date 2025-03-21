@@ -8,7 +8,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { AdicionarItemsModal } from './AdicionarItemsModal';
 import { ApprovalItem } from '@/pages/Index';
 
@@ -32,24 +31,20 @@ const ApprovalItemsModal = ({ isOpen, onClose, items, onAddItem, atendimentoId }
           </DialogHeader>
 
           <div className="mt-2">
-            <div className="flex justify-between mb-4">
-              <Button 
+            <div className="flex gap-2 mb-4">
+              <Button
+                className="text-gray-800 font-medium rounded flex items-center gap-2"
+                variant="outline"
+                onClick={() => setIsAddItemModalOpen(true)}
+              >
+                Adicionar Item
+              </Button>
+              <Button
                 className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded"
                 variant="outline"
               >
                 Concluir / Enviar para Cotação (Compras Oficinas)
               </Button>
-              
-              <div className="flex items-center">
-                <Button 
-                  className="text-gray-800 font-medium rounded flex items-center gap-2"
-                  variant="outline"
-                  onClick={() => setIsAddItemModalOpen(true)}
-                >
-                  Adicionar Item
-                </Button>
-                <ArrowRight className="ml-2 text-gray-400 w-6 h-6" />
-              </div>
             </div>
 
             <div className="border rounded overflow-hidden">
@@ -109,7 +104,7 @@ const ApprovalItemsModal = ({ isOpen, onClose, items, onAddItem, atendimentoId }
         </DialogContent>
       </Dialog>
 
-      <AdicionarItemsModal 
+      <AdicionarItemsModal
         isOpen={isAddItemModalOpen}
         onClose={() => setIsAddItemModalOpen(false)}
         onAddItem={onAddItem}

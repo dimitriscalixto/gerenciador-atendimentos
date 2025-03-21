@@ -102,11 +102,6 @@ const Index = () => {
             <Plus className="w-4 h-4 text-white transition-transform duration-200" />
           </div>
 
-          <div className='inline-flex items-center gap-2 bg-marco-blue px-4 py-2 rounded-md min-w-[200px] cursor-pointer ml-4' onClick={handleOpenApprovalModal}>
-            <p className='mr-2 text-white inline'>Ver Itens Aguardando Aprovação</p>
-            <Plus className="w-4 h-4 text-white transition-transform duration-200" />
-          </div>
-
           <AddAtendimentoModal
             isOpen={isModalOpen}
             onClose={handleCloseModal}
