@@ -4,37 +4,36 @@ import { Button } from "./ui/button";
 import { ArrowDown, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { AdicionarItemsModal } from "./AdicionarItemsModal";
-
+import { ApprovalItem } from "@/pages/Index";
 
 interface ApprovalItemsModalProps {
   isOpen: boolean;
   onClose?: () => void;
-}
-interface ApprovalItem {
-  id: string;
-  itemEstoque: string;
-  descricao: string;
-  quantidade: number;
-  valorUnitario: number;
-  situacao: string;
-  acao: string;
+  onAddItem: (item: ApprovalItem) => void;
 }
 
 const mockApprovalItems: ApprovalItem[] = Array.from({ length: 4 }, (_, i) => ({
   id: `item-${i + 1}`,
   itemEstoque: `Nome Item Estoque ${i + 1}`,
   descricao: `Descrição ${i + 1}`,
-  quantidade: i + 1,
-  valorUnitario: i * 10,
+  quantidade: `${i + 1}`,
+  valorUnitario: `${i * 10}`,
   situacao: `Situação ${i + 1}`,
   acao: 'Botão Teste',
 }));
 
-export const AprovarItemsModal = ({ isOpen, onClose }: ApprovalItemsModalProps) => {
+export const AprovarItemsModal = ({ isOpen, onClose, onAddItem }: ApprovalItemsModalProps) => {
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
+  
+  // Handler for adding an item from the AdicionarItemsModal
+  const handleAddItem = (newItem: ApprovalItem) => {
+    onAddItem(newItem);
+    setIsAddItemModalOpen(false);
+  };
+  
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <Dialog open={isOpen} onOpenChange={(open) => !open && onClose?.()}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-medium">Itens Aguardando Aprovação</DialogTitle>
@@ -107,6 +106,7 @@ export const AprovarItemsModal = ({ isOpen, onClose }: ApprovalItemsModalProps) 
       <AdicionarItemsModal
         isOpen={isAddItemModalOpen}
         onClose={() => setIsAddItemModalOpen(false)}
+        onAddItem={handleAddItem}
       />
     </>
   )

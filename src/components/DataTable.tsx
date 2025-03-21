@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { Check, X } from 'lucide-react';
 import { cn } from "@/lib/utils";
-import { table } from 'console';
 import { AprovarItemsModal } from './ApprovarItemsModal';
+import { ApprovalItem } from '@/pages/Index';
 
 export interface TableRow {
   id: string;
@@ -41,11 +41,14 @@ interface DataTableProps {
   className?: string;
   onAddRow?: (row: TableRow) => void;
   tableData: TableRow[];
+  onApprovalClick?: () => void; // Add this prop
 }
 
-const DataTable = ({ className, onAddRow, tableData }: DataTableProps) => {
+const DataTable = ({ className, onAddRow, tableData, onApprovalClick }: DataTableProps) => {
   const [data, setData] = useState<TableRow[]>(mockData);
   const [isAprovarModalOpen, setIsAprovarModalOpen] = useState(false);
+  const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
+  
   // Método para adicionar uma nova linha à tabela
   const addRow = (newRow: TableRow) => {
     setData(prevData => [newRow, ...prevData]);
@@ -53,14 +56,28 @@ const DataTable = ({ className, onAddRow, tableData }: DataTableProps) => {
       onAddRow(newRow);
     }
   };
-  const handleOpenAprovarItemModal = () => {
+  
+  const handleOpenAprovarItemModal = (rowId: string) => {
+    setSelectedRowId(rowId);
     setIsAprovarModalOpen(true);
-  }
-  const StatusIcon = ({ status, onClick }: { status: boolean, onClick?: () => void }) => {
+    // If the parent component provides an onApprovalClick handler, call it
+    if (onApprovalClick) {
+      onApprovalClick();
+    }
+  };
+  
+  const StatusIcon = ({ status, rowId, columnType }: { status: boolean, rowId: string, columnType: string }) => {
+    const handleClick = () => {
+      // Only open approval modal when clicking on aguardandoAprovacao column
+      if (columnType === 'aguardandoAprovacao') {
+        handleOpenAprovarItemModal(rowId);
+      }
+    };
+    
     if (status) {
       return (
         <div className="flex justify-center">
-          <div className="status-icon bg-marco-success/10 p-1 rounded-full" onClick={onClick}>
+          <div className="status-icon bg-marco-success/10 p-1 rounded-full cursor-pointer" onClick={handleClick}>
             <Check className="w-4 h-4 text-marco-success" />
           </div>
         </div>
@@ -68,7 +85,7 @@ const DataTable = ({ className, onAddRow, tableData }: DataTableProps) => {
     }
     return (
       <div className="flex justify-center">
-        <div className="status-icon bg-marco-error/10 p-1 rounded-full" onClick={onClick}>
+        <div className="status-icon bg-marco-error/10 p-1 rounded-full cursor-pointer" onClick={handleClick}>
           <X className="w-4 h-4 text-marco-error" />
         </div>
       </div>
@@ -112,28 +129,35 @@ const DataTable = ({ className, onAddRow, tableData }: DataTableProps) => {
                 <td className={cellClasses}>{row.solicitante}</td>
                 <td className={cellClasses}>{row.dataCriada}</td>
                 <td className={cellClasses}>
-                  <StatusIcon status={row.emAndamento} />
+                  <StatusIcon status={row.emAndamento} rowId={row.id} columnType="emAndamento" />
                 </td>
                 <td className={cellClasses}>
-                  <StatusIcon status={row.aguardandoAprovacao} onClick={handleOpenAprovarItemModal} />
+                  <StatusIcon status={row.aguardandoAprovacao} rowId={row.id} columnType="aguardandoAprovacao" />
                 </td>
                 <td className={cellClasses}>
-                  <StatusIcon status={row.autorizada} />
+                  <StatusIcon status={row.autorizada} rowId={row.id} columnType="autorizada" />
                 </td>
                 <td className={cellClasses}>
-                  <StatusIcon status={row.envioMecanico} />
+                  <StatusIcon status={row.envioMecanico} rowId={row.id} columnType="envioMecanico" />
                 </td>
                 <td className={cellClasses}>
-                  <StatusIcon status={row.faturamento} />
+                  <StatusIcon status={row.faturamento} rowId={row.id} columnType="faturamento" />
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <AprovarItemsModal isOpen={isAprovarModalOpen} onClose={() => {
-        setIsAprovarModalOpen(false);
-      }} />
+      <AprovarItemsModal 
+        isOpen={isAprovarModalOpen} 
+        onClose={() => {
+          setIsAprovarModalOpen(false);
+        }}
+        onAddItem={(item) => {
+          // We'll pass this function to handle adding items when needed
+          console.log("Adding item:", item);
+        }}
+      />
     </div>
   );
 };

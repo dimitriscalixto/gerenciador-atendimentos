@@ -121,7 +121,10 @@ const Index = () => {
           />
 
           <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-            <DataTable tableData={tableData} onApprovalClick={handleOpenApprovalModal} />
+            <DataTable 
+              tableData={tableData} 
+              onApprovalClick={handleOpenApprovalModal} 
+            />
           </div>
         </div>
       </main>
