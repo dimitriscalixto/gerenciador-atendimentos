@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Check, X, ArrowRight, ArrowDown } from 'lucide-react';
+import { ArrowRight, ArrowDown } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -9,41 +9,19 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import AddItemModal from './AddItemModal';
-
-interface ApprovalItem {
-  id: string;
-  itemEstoque: string;
-  descricao: string;
-  quantidade: string;
-  valorUnitario: string;
-  situacao: string;
-  acao: string;
-}
+import { AdicionarItemsModal } from './AdicionarItemsModal';
+import { ApprovalItem } from '@/pages/Index';
 
 interface ApprovalItemsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  items: ApprovalItem[];
+  onAddItem: (item: ApprovalItem) => void;
   atendimentoId?: string;
 }
 
-const mockApprovalItems: ApprovalItem[] = Array.from({ length: 15 }, (_, i) => ({
-  id: `item-${i + 1}`,
-  itemEstoque: `Bold text column`,
-  descricao: `Regular text column`,
-  quantidade: `Regular text column`,
-  valorUnitario: `Regular text column`,
-  situacao: `Cliente Teste`,
-  acao: `Cliente Teste`,
-}));
-
-const ApprovalItemsModal = ({ isOpen, onClose, atendimentoId }: ApprovalItemsModalProps) => {
+const ApprovalItemsModal = ({ isOpen, onClose, items, onAddItem, atendimentoId }: ApprovalItemsModalProps) => {
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
-  const [items, setItems] = useState<ApprovalItem[]>(mockApprovalItems);
-
-  const handleAddItem = (newItem: ApprovalItem) => {
-    setItems((prevItems) => [newItem, ...prevItems]);
-  };
 
   return (
     <>
@@ -105,16 +83,24 @@ const ApprovalItemsModal = ({ isOpen, onClose, atendimentoId }: ApprovalItemsMod
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {items.map((item) => (
-                      <tr key={item.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{item.itemEstoque}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.descricao}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.quantidade}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.valorUnitario}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.situacao}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.acao}</td>
+                    {items.length > 0 ? (
+                      items.map((item) => (
+                        <tr key={item.id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{item.itemEstoque}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.descricao}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.quantidade}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.valorUnitario}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.situacao}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.acao}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+                          Nenhum item aguardando aprovação
+                        </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -123,10 +109,10 @@ const ApprovalItemsModal = ({ isOpen, onClose, atendimentoId }: ApprovalItemsMod
         </DialogContent>
       </Dialog>
 
-      <AddItemModal 
+      <AdicionarItemsModal 
         isOpen={isAddItemModalOpen}
         onClose={() => setIsAddItemModalOpen(false)}
-        onAddItem={handleAddItem}
+        onAddItem={onAddItem}
       />
     </>
   );

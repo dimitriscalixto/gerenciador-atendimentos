@@ -4,9 +4,26 @@ import Header from '@/components/Header';
 import DataTable, { TableRow } from '@/components/DataTable';
 import { Plus, Search } from 'lucide-react';
 import AddAtendimentoModal from '@/components/AddAtendimentoModal';
+import ApprovalItemsModal from '@/components/ApprovalItemsModal';
+
+// Interface for the approval items
+export interface ApprovalItem {
+  id: string;
+  itemEstoque: string;
+  descricao: string;
+  quantidade: string;
+  valorUnitario: string;
+  situacao: string;
+  acao: string;
+}
 
 const Index = () => {
   const [tableData, setTableData] = useState<TableRow[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
+  
+  // Shared state for approval items
+  const [approvalItems, setApprovalItems] = useState<ApprovalItem[]>([]);
 
   const handleAddAtendimento = (atendimento: TableRow) => {
     // Criar um novo objeto de linha para a tabela
@@ -29,7 +46,6 @@ const Index = () => {
     setTableData(prev => [newRow, ...prev]);
     console.log(tableData)
   };
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -44,6 +60,22 @@ const Index = () => {
     handleAddAtendimento(atendimento)
     handleCloseModal();
   };
+
+  // Function to handle opening the approval modal
+  const handleOpenApprovalModal = () => {
+    setIsApprovalModalOpen(true);
+  };
+
+  // Function to handle closing the approval modal
+  const handleCloseApprovalModal = () => {
+    setIsApprovalModalOpen(false);
+  };
+
+  // Function to add a new approval item
+  const handleAddApprovalItem = (newItem: ApprovalItem) => {
+    setApprovalItems(prevItems => [newItem, ...prevItems]);
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 animate-fade-in">
       <Header onAddAtendimento={handleAddAtendimento} />
@@ -70,13 +102,26 @@ const Index = () => {
             <Plus className="w-4 h-4 text-white transition-transform duration-200" />
           </div>
 
+          <div className='inline-flex items-center gap-2 bg-marco-blue px-4 py-2 rounded-md min-w-[200px] cursor-pointer ml-4' onClick={handleOpenApprovalModal}>
+            <p className='mr-2 text-white inline'>Ver Itens Aguardando Aprovação</p>
+            <Plus className="w-4 h-4 text-white transition-transform duration-200" />
+          </div>
+
           <AddAtendimentoModal
             isOpen={isModalOpen}
             onClose={handleCloseModal}
             onSelectAtendimento={handleAtendimentoSelect}
           />
+
+          <ApprovalItemsModal
+            isOpen={isApprovalModalOpen}
+            onClose={handleCloseApprovalModal}
+            items={approvalItems}
+            onAddItem={handleAddApprovalItem}
+          />
+
           <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-            <DataTable tableData={tableData} />
+            <DataTable tableData={tableData} onApprovalClick={handleOpenApprovalModal} />
           </div>
         </div>
       </main>

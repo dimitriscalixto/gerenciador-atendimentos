@@ -1,19 +1,36 @@
+
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import React from "react";
+import React, { useState } from "react";
 import { Search } from "lucide-react";
+import { ApprovalItem } from "@/pages/Index";
 
 interface AddItemModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onAddItem: (item: ApprovalItem) => void;
 }
 
-export const AdicionarItemsModal = ({ isOpen, onClose }: AddItemModalProps) => {
+export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModalProps) => {
   const [activeTab, setActiveTab] = React.useState("manual");
+  const [formData, setFormData] = useState({
+    codigo: '',
+    marca: '',
+    descricao: '',
+    qtd: '1',
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [id]: value
+    }));
+  };
 
   const mockAutopecas = [
     {
@@ -88,9 +105,47 @@ export const AdicionarItemsModal = ({ isOpen, onClose }: AddItemModalProps) => {
     },
   ];
 
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmitManual = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Create a new item from form data
+    const newItem: ApprovalItem = {
+      id: `item-${Date.now()}`,
+      itemEstoque: formData.codigo,
+      descricao: formData.descricao,
+      quantidade: formData.qtd,
+      valorUnitario: '0',
+      situacao: 'Aguardando',
+      acao: 'Pendente',
+    };
+    
+    // Add the item to the shared state
+    onAddItem(newItem);
+    
+    // Reset form and close modal
+    setFormData({
+      codigo: '',
+      marca: '',
+      descricao: '',
+      qtd: '1',
+    });
+    onClose();
+  };
+
+  const handleSelectCadastradoItem = (item: any) => {
+    // Convert the selected autopeca to an ApprovalItem
+    const newItem: ApprovalItem = {
+      id: `item-${Date.now()}`,
+      itemEstoque: item.codPublico,
+      descricao: item.descricao,
+      quantidade: '1',
+      valorUnitario: '0',
+      situacao: item.situacao,
+      acao: 'Pendente',
+    };
+    
+    // Add the item to the shared state
+    onAddItem(newItem);
     onClose();
   };
 
@@ -114,29 +169,50 @@ export const AdicionarItemsModal = ({ isOpen, onClose }: AddItemModalProps) => {
           <div className="flex-grow flex flex-col h-full overflow-hidden">
             {/* Aba MANUAL */}
             <TabsContent value="manual" className="mt-0">
-              <form onSubmit={handleSubmit} className="flex flex-col">
+              <form onSubmit={handleSubmitManual} className="flex flex-col">
                 <div className="mb-4">
                   <h3 className="text-sm font-medium mb-4">Preencha os dados do item abaixo:</h3>
 
                   <div className="space-y-4">
                     <div>
                       <Label htmlFor="codigo">Código *</Label>
-                      <Input id="codigo" required />
+                      <Input 
+                        id="codigo" 
+                        required 
+                        value={formData.codigo}
+                        onChange={handleInputChange}
+                      />
                     </div>
 
                     <div>
                       <Label htmlFor="marca">Marca *</Label>
-                      <Input id="marca" required />
+                      <Input 
+                        id="marca" 
+                        required 
+                        value={formData.marca}
+                        onChange={handleInputChange}
+                      />
                     </div>
 
                     <div>
                       <Label htmlFor="descricao">Descrição *</Label>
-                      <Input id="descricao" required />
+                      <Input 
+                        id="descricao" 
+                        required 
+                        value={formData.descricao}
+                        onChange={handleInputChange}
+                      />
                     </div>
 
                     <div>
                       <Label htmlFor="qtd">Qtd *</Label>
-                      <Input id="qtd" type="number" required />
+                      <Input 
+                        id="qtd" 
+                        type="number" 
+                        required 
+                        value={formData.qtd}
+                        onChange={handleInputChange}
+                      />
                     </div>
                   </div>
                 </div>
@@ -149,7 +225,7 @@ export const AdicionarItemsModal = ({ isOpen, onClose }: AddItemModalProps) => {
 
             {/* Aba CADASTRADO */}
             <TabsContent value="cadastrado" className="mt-0">
-              <form onSubmit={handleSubmit} className="flex flex-col">
+              <form className="flex flex-col">
                 <div className="mb-4">
                   <h3 className="text-sm font-medium mb-4">Selecione o item cadastrado:</h3>
                   <div className="flex items-center space-x-2 mb-4">
@@ -191,7 +267,11 @@ export const AdicionarItemsModal = ({ isOpen, onClose }: AddItemModalProps) => {
                       <tbody>
                         {mockAutopecas.length > 0 ? (
                           mockAutopecas.map((item) => (
-                            <tr key={item.id} className="hover:bg-gray-100">
+                            <tr 
+                              key={item.id} 
+                              className="hover:bg-gray-100 cursor-pointer" 
+                              onClick={() => handleSelectCadastradoItem(item)}
+                            >
                               <td className="border px-2 py-1">{item.validacao}</td>
                               <td className="border px-2 py-1">{item.descricao}</td>
                               <td className="border px-2 py-1">{item.codPublico}</td>
@@ -212,61 +292,70 @@ export const AdicionarItemsModal = ({ isOpen, onClose }: AddItemModalProps) => {
                           </tr>
                         )}
                       </tbody>
-                  </table>
+                    </table>
+                  </div>
                 </div>
-              </div>
 
-              <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800 text-white py-2 uppercase">
-                Adicionar Item
-              </Button>
-            </form>
-          </TabsContent>
-          <TabsContent value="providencia" className="mt-0">
-            <form onSubmit={handleSubmit} className="flex flex-col">
-              <div className="mb-4">
-                <h3 className="text-sm font-medium mb-4">Selecione o item cadastrado:</h3>
-                <div className="flex items-center space-x-2 mb-4">
-                  <Input id="searchItemGeneral" placeholder="Pesquisar item..." className="flex-grow" />
-                  <Button type="button" className="bg-gray-300 hover:bg-gray-400 text-black px-4">
-                    <Search />
-                  </Button>
-                </div>
-                {/* Tabela com Campos de Pesquisa */}
-                <div className="border rounded-md overflow-auto max-h-72">
-                  <table className="w-full text-sm text-left border-collapse">
-                    <thead className="bg-gray-100">
-                      <tr>
-                        <th className="border px-2 py-1">Validação</th>
-                        <th className="border px-2 py-1">Descrição</th>
-                        <th className="border px-2 py-1">Cód Público</th>
-                        <th className="border px-2 py-1">Fábrica</th>
-                        <th className="border px-2 py-1">Marca</th>
-                        <th className="border px-2 py-1">Utilização</th>
-                        <th className="border px-2 py-1">Categoria</th>
-                        <th className="border px-2 py-1">Grupo</th>
-                        <th className="border px-2 py-1">Disponível</th>
-                        <th className="border px-2 py-1">Qtd</th>
-                        <th className="border px-2 py-1">Situação</th>
-                      </tr>
-                      <tr>
-                        {/* Campos de Pesquisa Individuais */}
-                        <th className="border px-2 py-1"><Input id="searchValidacao" placeholder="Validaçao..." /></th>
-                        <th className="border px-2 py-1"><Input id="searchDescricao" placeholder="Descrição..." /></th>
-                        <th className="border px-2 py-1"><Input id="searchCodPublico" placeholder="Cód Publico..." /></th>
-                        <th className="border px-2 py-1"><Input id="searchFabrica" placeholder="Fábrica..." /></th>
-                        <th className="border px-2 py-1"><Input id="searchMarca" placeholder="Marca..." /></th>
-                        <th className="border px-2 py-1"><Input id="searchUtilizacao" placeholder="Utilização..." /></th>
-                        <th className="border px-2 py-1"><Input id="searchCategoria" placeholder="Categoria..." /></th>
-                        <th className="border px-2 py-1"><Input id="searchGrupo" placeholder="Grupo..." /></th>
-                        <th className="border px-2 py-1"><Input id="searchDisponivel" placeholder="Disponível..." /></th>
-                        <th className="border px-2 py-1"><Input id="searchQtd" placeholder="Qtd..." /></th>
-                        <th className="border px-2 py-1"><Input id="searchSituação" placeholder="Situação..." /></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                    {mockAutopecas.length > 0 ? (
+                <Button 
+                  type="button" 
+                  className="w-full bg-blue-900 hover:bg-blue-800 text-white py-2 uppercase"
+                  onClick={onClose}
+                >
+                  Cancelar
+                </Button>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="providencia" className="mt-0">
+              <form className="flex flex-col">
+                <div className="mb-4">
+                  <h3 className="text-sm font-medium mb-4">Selecione o item cadastrado:</h3>
+                  <div className="flex items-center space-x-2 mb-4">
+                    <Input id="searchItemGeneral" placeholder="Pesquisar item..." className="flex-grow" />
+                    <Button type="button" className="bg-gray-300 hover:bg-gray-400 text-black px-4">
+                      <Search />
+                    </Button>
+                  </div>
+                  {/* Tabela com Campos de Pesquisa */}
+                  <div className="border rounded-md overflow-auto max-h-72">
+                    <table className="w-full text-sm text-left border-collapse">
+                      <thead className="bg-gray-100">
+                        <tr>
+                          <th className="border px-2 py-1">Validação</th>
+                          <th className="border px-2 py-1">Descrição</th>
+                          <th className="border px-2 py-1">Cód Público</th>
+                          <th className="border px-2 py-1">Fábrica</th>
+                          <th className="border px-2 py-1">Marca</th>
+                          <th className="border px-2 py-1">Utilização</th>
+                          <th className="border px-2 py-1">Categoria</th>
+                          <th className="border px-2 py-1">Grupo</th>
+                          <th className="border px-2 py-1">Disponível</th>
+                          <th className="border px-2 py-1">Qtd</th>
+                          <th className="border px-2 py-1">Situação</th>
+                        </tr>
+                        <tr>
+                          {/* Campos de Pesquisa Individuais */}
+                          <th className="border px-2 py-1"><Input id="searchValidacao" placeholder="Validaçao..." /></th>
+                          <th className="border px-2 py-1"><Input id="searchDescricao" placeholder="Descrição..." /></th>
+                          <th className="border px-2 py-1"><Input id="searchCodPublico" placeholder="Cód Publico..." /></th>
+                          <th className="border px-2 py-1"><Input id="searchFabrica" placeholder="Fábrica..." /></th>
+                          <th className="border px-2 py-1"><Input id="searchMarca" placeholder="Marca..." /></th>
+                          <th className="border px-2 py-1"><Input id="searchUtilizacao" placeholder="Utilização..." /></th>
+                          <th className="border px-2 py-1"><Input id="searchCategoria" placeholder="Categoria..." /></th>
+                          <th className="border px-2 py-1"><Input id="searchGrupo" placeholder="Grupo..." /></th>
+                          <th className="border px-2 py-1"><Input id="searchDisponivel" placeholder="Disponível..." /></th>
+                          <th className="border px-2 py-1"><Input id="searchQtd" placeholder="Qtd..." /></th>
+                          <th className="border px-2 py-1"><Input id="searchSituação" placeholder="Situação..." /></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {mockAutopecas.length > 0 ? (
                           mockAutopecas.map((item) => (
-                            <tr key={item.id} className="hover:bg-gray-100">
+                            <tr 
+                              key={item.id} 
+                              className="hover:bg-gray-100 cursor-pointer"
+                              onClick={() => handleSelectCadastradoItem(item)}
+                            >
                               <td className="border px-2 py-1">{item.validacao}</td>
                               <td className="border px-2 py-1">{item.descricao}</td>
                               <td className="border px-2 py-1">{item.codPublico}</td>
@@ -287,20 +376,23 @@ export const AdicionarItemsModal = ({ isOpen, onClose }: AddItemModalProps) => {
                             </td>
                           </tr>
                         )}
-                    </tbody>
-                  </table>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
 
-              <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800 text-white py-2 uppercase">
-                Adicionar Item
-              </Button>
-            </form>
-          </TabsContent>
-
-        </div>
-      </Tabs>
-    </DialogContent>
-    </Dialog >
+                <Button 
+                  type="button" 
+                  className="w-full bg-blue-900 hover:bg-blue-800 text-white py-2 uppercase"
+                  onClick={onClose}
+                >
+                  Cancelar
+                </Button>
+              </form>
+            </TabsContent>
+          </div>
+        </Tabs>
+      </DialogContent>
+    </Dialog>
   );
 };
