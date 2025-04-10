@@ -1,5 +1,4 @@
 
-import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
@@ -48,6 +47,7 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
       disponivel: "Sim",
       qtd: 20,
       situacao: "Novo",
+      status: 0,
     },
     {
       id: 2,
@@ -62,6 +62,7 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
       disponivel: "Sim",
       qtd: 15,
       situacao: "Em estoque",
+      status: 0,
     },
     {
       id: 3,
@@ -76,6 +77,7 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
       disponivel: "Não",
       qtd: 0,
       situacao: "Indisponível",
+      status: 0,
     },
     {
       id: 4,
@@ -90,6 +92,7 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
       disponivel: "Sim",
       qtd: 5,
       situacao: "Novo",
+      status: 0,
     },
     {
       id: 5,
@@ -104,6 +107,7 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
       disponivel: "Sim",
       qtd: 8,
       situacao: "Novo",
+      status: 0,
     },
   ];
   const filteredItems = mockAutopecas.filter((item) => item.descricao.includes(search));
@@ -145,8 +149,6 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
       situacao: item.situacao,
       acao: 'Pendente',
     };
-
-    // Add the item to the shared state
     onAddItem(newItem);
     onClose();
   };

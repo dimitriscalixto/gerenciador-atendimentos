@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from 'lucide-react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { useMockData } from './contexts/atendimentoContext';
 
 interface Atendimento {
   id: string;
@@ -15,20 +16,8 @@ interface Atendimento {
   cliente: string;
   solicitante: string;
   dataCriada: string;
+  status: number;
 }
-
-// Dados simulados para teste
-const mockAtendimentos: Atendimento[] = Array.from({ length: 5 }, (_, i) => ({
-  id: `atend-${i + 1}`,
-  notificacao: `Notificação ${i + 101}`,
-  atendimento: `${100000 + i}`,
-  os: `OS ${i + 201}`,
-  placa: `Placa ${String.fromCharCode(65 + (i % 26))}${String.fromCharCode(65 + ((i + 5) % 26))}${Math.floor(Math.random() * 9000) + 1000}`,
-  cliente: `Cliente ${i + 1}`,
-  solicitante: `Solicitante ${i + 1}`,
-  dataCriada: `${10 + (i % 20)}/04/2025`,
-}));
-
 interface AddAtendimentoModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -36,6 +25,7 @@ interface AddAtendimentoModalProps {
 }
 
 const AddAtendimentoModal = ({ isOpen, onClose, onSelectAtendimento }: AddAtendimentoModalProps) => {
+  const { mockData, setMockData } = useMockData(); 
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredResults, setFilteredResults] = useState<Atendimento[]>([]);
 
@@ -47,7 +37,7 @@ const AddAtendimentoModal = ({ isOpen, onClose, onSelectAtendimento }: AddAtendi
       return;
     }
 
-    const results = mockAtendimentos.filter(item =>
+    const results = mockData.filter(item =>
       item.atendimento.toLowerCase().includes(value.toLowerCase())
     );
 

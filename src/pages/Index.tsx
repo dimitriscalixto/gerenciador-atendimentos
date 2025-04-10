@@ -1,10 +1,12 @@
 
 import React, { useState } from 'react';
 import Header from '@/components/Header';
-import DataTable, { TableRow } from '@/components/DataTable';
+import DataTable from '@/components/DataTable';
 import { Plus, Search } from 'lucide-react';
 import AddAtendimentoModal from '@/components/AddAtendimentoModal';
 import ApprovalItemsModal from '@/components/ApprovalItemsModal';
+import type { Atendimento } from '@/types/atendimento';
+
 
 // Interface for the approval items
 export interface ApprovalItem {
@@ -18,33 +20,13 @@ export interface ApprovalItem {
 }
 
 const Index = () => {
-  const [tableData, setTableData] = useState<TableRow[]>([]);
+  const [tableData, setTableData] = useState<Atendimento[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
-  
-  // Shared state for approval items
   const [approvalItems, setApprovalItems] = useState<ApprovalItem[]>([]);
-
-  const handleAddAtendimento = (atendimento: TableRow) => {
-    // Criar um novo objeto de linha para a tabela
-    const newRow: TableRow = {
-      id: `new-${Date.now()}`,
-      notificacao: atendimento.notificacao || '',
-      atendimento: atendimento.atendimento || '',
-      os: atendimento.os || '',
-      placa: atendimento.placa || '',
-      cliente: atendimento.cliente || '',
-      solicitante: atendimento.solicitante || '',
-      dataCriada: atendimento.dataCriada || new Date().toLocaleDateString(),
-      emAndamento: true, // Set to true by default for new entries
-      aguardandoAprovacao: false,
-      autorizada: false,
-      envioMecanico: false,
-      faturamento: false,
-    };
-    console.log('row :', newRow);
-    setTableData(prev => [newRow, ...prev]);
-    console.log(tableData)
+  const [selectedAtendimentoId, setSelectedAtendimentoId] = useState<number | undefined>();
+  const handleAddAtendimento = (atendimento: Atendimento) => {
+    setTableData(prev => [atendimento, ...prev]);
   };
 
   const handleOpenModal = () => {
@@ -55,14 +37,15 @@ const Index = () => {
     setIsModalOpen(false);
   };
 
-  const handleAtendimentoSelect = (atendimento: TableRow) => {
-    console.log(atendimento);
+  const handleAtendimentoSelect = (atendimento: Atendimento) => {
     handleAddAtendimento(atendimento)
     handleCloseModal();
   };
 
   // Function to handle opening the approval modal
-  const handleOpenApprovalModal = () => {
+  const handleOpenApprovalModal = (rowId: number) => {
+    console.log(rowId)
+    setSelectedAtendimentoId(rowId);
     setIsApprovalModalOpen(true);
   };
 
@@ -78,7 +61,7 @@ const Index = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 animate-fade-in">
-      <Header onAddAtendimento={handleAddAtendimento} />
+      <Header />
 
       <main className="flex-1 w-full p-4 md:p-6">
         <div className="max-w-full mx-auto">
@@ -113,12 +96,13 @@ const Index = () => {
             onClose={handleCloseApprovalModal}
             items={approvalItems}
             onAddItem={handleAddApprovalItem}
+            atendimentoId={selectedAtendimentoId}
           />
 
           <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-            <DataTable 
-              tableData={tableData} 
-              onApprovalClick={handleOpenApprovalModal} 
+            <DataTable
+              tableData={tableData}
+              onApprovalClick={handleOpenApprovalModal}
             />
           </div>
         </div>

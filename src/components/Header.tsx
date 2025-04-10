@@ -1,13 +1,7 @@
-
-import React, { useState } from 'react';
-import { Search, Plus } from 'lucide-react';
 import { cn } from "@/lib/utils";
-import AddAtendimentoModal from './AddAtendimentoModal';
-import type { TableRow } from './DataTable';
 
 interface HeaderProps {
   className?: string;
-  onAddAtendimento: (atendimento: TableRow) => void;
 }
 
 const Header = ({ className}: HeaderProps) => {
