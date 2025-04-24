@@ -66,7 +66,7 @@ const DataTable = ({ className, onAddRow, tableData, onApprovalClick }: DataTabl
 
   }
   const headerClasses = "py-3 px-4 text-sm font-medium text-gray-700 border-b";
-  const cellClasses = "py-3 px-4 text-sm text-gray-600 border-b";
+  const cellClasses = "py-3 px-4 text-sm text-gray-600 border-b text-center";
   return (
     <div className={cn("w-full overflow-hidden rounded-md animate-fade-in", className)}>
       <div className="data-table-container overflow-x-auto">

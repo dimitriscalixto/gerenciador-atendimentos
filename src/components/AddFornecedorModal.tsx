@@ -18,10 +18,10 @@ export const AddFornecedorModal = ({ isOpen, onClose, atendimentoId, itemId }: A
   const [fornecedor, setFornecedor] = useState('');
   const [valorSemImposto, setValorSemImposto] = useState('');
   const { mockFornecedorData, setMockFornecedorData } = useMockFornecedorData();
-  console.log(mockFornecedorData)
+  const novoFornecedorId = Math.max(0, ...mockFornecedorData.map(f => f.fornecedorId || 0)) + 1;
   const handleAddFornecedor = (e: React.FormEvent) => {
     e.preventDefault();
-    const newFornecedor = { atendimentoId, itemId, quantidade, valor: valorSemImposto, nomeFornecedor: fornecedor };
+    const newFornecedor = { atendimentoId, itemId, quantidade, valor: valorSemImposto, nomeFornecedor: fornecedor, fornecedorId: novoFornecedorId};
     setMockFornecedorData((prevData) => [...prevData, newFornecedor]);
   }
   return (

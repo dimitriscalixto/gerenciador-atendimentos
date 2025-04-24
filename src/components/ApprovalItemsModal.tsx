@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ArrowRight, ArrowDown, Plus, PlusCircle } from 'lucide-react';
+import { ArrowRight, ArrowDown, Plus, PlusCircle, Plane, Trash } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -14,6 +14,9 @@ import { useMockData } from './contexts/atendimentoContext';
 import { Atendimento } from '@/types/atendimento';
 import { AddFornecedorModal } from './AddFornecedorModal';
 import { useMockFornecedorData } from './contexts/fornecedorContext';
+import { MecanicoModal } from './MacanicoModal';
+import type { Fornecedor } from '@/types/fornecedor';
+import { SelecionarPropostasModal } from './selecionarPropostasModal.tsx';
 
 interface ApprovalItemsModalProps {
   isOpen: boolean;
@@ -29,10 +32,21 @@ const ApprovalItemsModal = ({ isOpen, onClose, items, onAddItem, atendimentoId }
   const [fornecedorModalOpen, setFornecedorModalOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState('');
   const { mockFornecedorData, setMockFornecedorData } = useMockFornecedorData();
-  const filteredFornecedor = mockFornecedorData.filter((fornecedor) => fornecedor.atendimentoId === atendimentoId);
+  const [itensAprovados, setItensAprovados] = useState<ApprovalItem[]>([]);
+  const [selecionarPropostasModalOpen, setSelecionarPropostasModalOpen] = useState(false);
+  const [propostasParaSelecionar, setPropostasParaSelecionar] = useState<Fornecedor[]>([]);
+  const filteredFornecedor = Array.from(
+    new Map(
+      mockFornecedorData
+        .filter((f) => f.atendimentoId === atendimentoId)
+        .map((f) => [f.nomeFornecedor, f]) // chave = nomeFornecedor
+    ).values()
+  );
   const atendimento = mockData.filter((atendimento) => parseInt(atendimento.id) === atendimentoId);
   const [seletecFornecedorid, setSelectedFornecedorId] = useState(null);
+  const [isMecanicoModalOpen, setIsMecanicoModalOpen] = useState(false);
   const handleFornecedorModalOpen = (itemId: string, fornecedorId: number) => {
+    console.log(fornecedorId)
     setSelectedItemId(itemId);
     setSelectedFornecedorId(fornecedorId)
     setFornecedorModalOpen(true);
@@ -45,6 +59,32 @@ const ApprovalItemsModal = ({ isOpen, onClose, items, onAddItem, atendimentoId }
     );
     setMockData(atendimento);
   }
+  const handleAbrirSelecaoPropostas = (itemId: string, fornecedorNome: string) => {
+    const propostas = mockFornecedorData.filter(f =>
+      f.atendimentoId === atendimentoId &&
+      f.itemId === itemId &&
+      f.nomeFornecedor === fornecedorNome
+    );
+    setPropostasParaSelecionar(propostas);
+    setSelecionarPropostasModalOpen(true);
+  };
+
+  const handleConfirmarAprovacaoSelecionadas = (selecionadas: Fornecedor[]) => {
+    const atualizados = mockFornecedorData.map((f) => {
+      const foiSelecionado = selecionadas.some(sel =>
+        sel.itemId === f.itemId &&
+        sel.fornecedorId === f.fornecedorId &&
+        sel.atendimentoId === f.atendimentoId
+      );
+      return {
+        ...f,
+        aprovado: foiSelecionado,
+      };
+    });
+    setMockFornecedorData(atualizados);
+  };
+
+
 
   const handleAprovarCliente = (atendimentoId: number) => {
     const atendimento = mockData.map((atendimento) =>
@@ -52,41 +92,60 @@ const ApprovalItemsModal = ({ isOpen, onClose, items, onAddItem, atendimentoId }
         ? { ...atendimento, status: 2 }
         : atendimento
     );
+    console.log(atendimento)
+    const itensAprovados = items.map(item => ({ ...item, aprovado: true }));
+    console.log(itensAprovados)
+    setItensAprovados(itensAprovados);
     setMockData(atendimento);
   }
-  
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
         <DialogContent className="max-w-[96vw] w-full max-h-[90vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle className="text-xl font-medium">{atendimento[0]?.status === 0 ? 'Em andamento' : atendimento[0]?.status === 1 ? 'Itens Aguardando Aprovação' : 'Item em Aprovação' }</DialogTitle>
+            <DialogTitle className="text-xl font-medium">{atendimento[0]?.status === 0 ? 'Em andamento' : atendimento[0]?.status === 1 ? 'Itens Aguardando Aprovação' : atendimento[0]?.status === 2 ? 'Autorizada' : 'Entrega Mecânico'}</DialogTitle>
           </DialogHeader>
 
           <div className="mt-2">
             <div className="flex gap-2 mb-4">
-              <Button
-                className="text-gray-800 font-medium rounded flex items-center gap-2"
-                variant="outline"
-                onClick={() => setIsAddItemModalOpen(true)}
-              >
-                Adicionar Item
-              </Button>
-              {atendimento[0]?.status === 0 ? 
-              <Button
-              className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded"
-              variant="outline"
-              onClick={() => handleAprovarAtendimento(atendimentoId)}
-            >
-              Concluir / Enviar para Aprovação
-            </Button>
-              : <Button
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded"
-                variant="outline"
-                onClick={() => handleAprovarCliente(atendimentoId)}
-              >
-                Aprovar / Cliente
-              </Button>
+              {atendimento[0]?.status <= 0 ?
+                <Button
+                  className="text-gray-800 font-medium rounded flex items-center gap-2"
+                  variant="outline"
+                  onClick={() => setIsAddItemModalOpen(true)}
+                >
+                  Adicionar Item
+                </Button> : ``}
+              {atendimento[0]?.status === 0 ?
+                <Button
+                  className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded"
+                  variant="outline"
+                  onClick={() => handleAprovarAtendimento(atendimentoId)}
+                >
+                  Concluir / Enviar para Aprovação
+                </Button>
+                : atendimento[0]?.status === 1 ?
+                  <div>
+                    <Button
+                      className="bg-green-400 hover:bg-green-300 text-gray-800 font-medium py-2 px-4 rounded"
+                      variant="outline"
+                      onClick={() => handleAprovarCliente(atendimentoId)}
+                    >
+                      Aprovar
+                    </Button>
+                    <Button
+                      className="bg-red-400 hover:bg-red-300 text-gray-800 font-medium py-2 px-4 rounded ml-4"
+                      variant="outline"
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                  : <div>
+                    <Button onClick={() => setIsMecanicoModalOpen(true)}>
+                      Enviar Para o Mecânico
+                    </Button>
+                  </div>
               }
             </div>
 
@@ -118,6 +177,9 @@ const ApprovalItemsModal = ({ isOpen, onClose, items, onAddItem, atendimentoId }
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         QTD
                       </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Situação
+                      </th>
                       {atendimento[0]?.status === 1 && (
                         <>
                           <th className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Valor de Compra</th>
@@ -133,7 +195,21 @@ const ApprovalItemsModal = ({ isOpen, onClose, items, onAddItem, atendimentoId }
                       </th>
                       {filteredFornecedor.map((fornecedor) => (
                         <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">
-                          {fornecedor.nomeFornecedor}
+                          <div className='flex gap-2 justify-center items-center'>
+                            {fornecedor.nomeFornecedor} - {fornecedor.fornecedorId} <Plane
+                              size={20}
+                              className="cursor-pointer"
+                              onClick={() => {
+                                const propostasFornecedor = mockFornecedorData.filter(
+                                  (f) =>
+                                    f.atendimentoId === atendimentoId &&
+                                    f.nomeFornecedor === fornecedor.nomeFornecedor
+                                );
+                                setPropostasParaSelecionar(propostasFornecedor);
+                                setSelecionarPropostasModalOpen(true);
+                              }}
+                            /><Trash size={20} color='red' /> <PlusCircle size={20} />
+                          </div>
                         </th>
                       ))}
                     </tr>
@@ -142,9 +218,10 @@ const ApprovalItemsModal = ({ isOpen, onClose, items, onAddItem, atendimentoId }
                     {items.length > 0 ? (
                       items.map((item) => {
                         const filteredFornecedores = mockFornecedorData.filter(
-                          (fornecedor) => fornecedor.atendimentoId === atendimentoId && fornecedor.itemId === item.id
+                          (fornecedor) =>
+                            fornecedor.atendimentoId === atendimentoId &&
+                            fornecedor.itemId === item.id
                         );
-
                         return (
                           <tr key={item.id}>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{item.id}</td>
@@ -153,6 +230,15 @@ const ApprovalItemsModal = ({ isOpen, onClose, items, onAddItem, atendimentoId }
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.descricao}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.descricao}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.quantidade}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {atendimento[0]?.status === 0
+                                ? 'Em andamento'
+                                : atendimento[0]?.status === 1
+                                  ? 'Itens Aguardando Aprovação'
+                                  : atendimento[0].status === 2
+                                    ? 'Autorizada'
+                                    : 'Entrega Mecânico'}
+                            </td>
 
                             {atendimento[0]?.status === 1 && (
                               <>
@@ -163,45 +249,64 @@ const ApprovalItemsModal = ({ isOpen, onClose, items, onAddItem, atendimentoId }
                             )}
 
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Ação</td>
+
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              <Button onClick={() => handleFornecedorModalOpen(item.id, null)} variant='outline'>
+                              <Button onClick={() => handleFornecedorModalOpen(item.id, seletecFornecedorid)} variant="outline">
                                 <Plus /> Proposta Fornecedor
                               </Button>
                             </td>
 
-                            <td className="text-sm text-gray-500 bg-yellow-100 w-full h-full" colSpan={filteredFornecedor.length > 0 ? 1 : filteredFornecedor.length || 1}>
-                              {filteredFornecedores.length > 0 ? (
-                                <table className="w-full flex-1 text-xs border border-gray-300">
-                                  <thead>
-                                    <tr>
-                                      <th className="px-2 py-1 border border-gray-300">QTD</th>
-                                      <th className="px-2 py-1 border border-gray-300">REFERÊNCIA</th>
-                                      <th className="px-2 py-1 border border-gray-300">VALOR UNITÁRIO</th>
-                                      <th className="px-2 py-1 border border-gray-300">VALOR TOTAL</th>
-                                      <th className="px-2 py-1 border border-gray-300">AÇÃO</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {filteredFornecedores.map((fornecedor) => (
-                                      <tr key={fornecedor.valor} className="h-full">
-                                        <td className="px-2 py-2 border border-gray-300">{fornecedor.quantidade}</td>
-                                        <td className="px-2 py-2 border border-gray-300">{fornecedor.nomeFornecedor}</td>
-                                        <td className="px-2 py-2 border border-gray-300">{fornecedor.valor}</td>
-                                        <td className="px-2 py-2 border border-gray-300">R$ 12,23</td>
-                                        <td className="px-2 py-2 border border-gray-300 text-center">
-                                          <button className="text-gray-500">
-                                            <Plus size={12} />
-                                          </button>
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              ) : (
-                                <div className="flex justify-end py-2 text-sm text-gray-500 cursor-pointer mr-4"><PlusCircle onClick={() => handleFornecedorModalOpen(item.id, seletecFornecedorid)} /></div>
-                              )}
-                            </td>
+                            {filteredFornecedor.map((fornecedorUnico) => {
+                              const propostasFornecedor = filteredFornecedores.filter(
+                                (f) => f.nomeFornecedor === fornecedorUnico.nomeFornecedor
+                              );
 
+                              const algumaAprovada = propostasFornecedor.some((p) => p.aprovado && p.itemId === item.id);
+
+
+                              return (
+                                <td
+                                  key={`${item.id}-${fornecedorUnico.nomeFornecedor}`}
+                                  className={`text-sm text-gray-500 ${propostasFornecedor.some((p) => p.aprovado && p.itemId === item.id)
+                                    ? "bg-green-100 border-green-500 border-2"
+                                    : "bg-yellow-100"
+                                    }`}
+                                >
+                                  {propostasFornecedor.length > 0 ? (
+                                    <table className="w-full text-xs border border-gray-300">
+                                      <thead>
+                                        <tr>
+                                          <th className="border px-2 py-1">QTD</th>
+                                          <th className="border px-2 py-1">REFERÊNCIA</th>
+                                          <th className="border px-2 py-1">VALOR UNITÁRIO</th>
+                                          <th className="border px-2 py-1">VALOR TOTAL</th>
+                                          <th className="border px-2 py-1">AÇÃO</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {propostasFornecedor.map((p, idx) => (
+                                          <tr key={idx}>
+                                            <td className="border px-2 py-1">{p.quantidade}</td>
+                                            <td className="border px-2 py-1">{p.nomeFornecedor}</td>
+                                            <td className="border px-2 py-1">{p.valor}</td>
+                                            <td className="border px-2 py-1">
+                                              {`R$ ${(parseFloat(p.valor) * parseFloat(p.quantidade)).toFixed(2)}`}
+                                            </td>
+                                            <td className="border px-2 py-1 text-center">
+
+                                            </td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  ) : (
+                                    <div className="flex justify-center py-2 text-sm text-gray-500 cursor-pointer">
+                                      <PlusCircle onClick={() => handleFornecedorModalOpen(item.id, seletecFornecedorid)} />
+                                    </div>
+                                  )}
+                                </td>
+                              );
+                            })}
                           </tr>
                         );
                       })
@@ -231,6 +336,18 @@ const ApprovalItemsModal = ({ isOpen, onClose, items, onAddItem, atendimentoId }
         onClose={() => setFornecedorModalOpen(false)}
         atendimentoId={atendimentoId}
         itemId={selectedItemId}
+      />
+      <MecanicoModal
+        isOpen={isMecanicoModalOpen}
+        onClose={() => setIsMecanicoModalOpen(false)}
+        items={itensAprovados}
+        atendimentoId={atendimentoId}
+      />
+      <SelecionarPropostasModal
+        isOpen={selecionarPropostasModalOpen}
+        onClose={() => setSelecionarPropostasModalOpen(false)}
+        propostas={propostasParaSelecionar}
+        onConfirm={handleConfirmarAprovacaoSelecionadas}
       />
     </>
   );
