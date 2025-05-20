@@ -15,7 +15,7 @@ interface AddItemModalProps {
 }
 
 export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModalProps) => {
-  const [activeTab, setActiveTab] = React.useState("manual");
+  const [activeTab, setActiveTab] = React.useState("itens pendentes");
   const [formData, setFormData] = useState({
     codigo: '',
     marca: '',
@@ -33,10 +33,88 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
     }));
   };
 
-  const mockAutopecas = [
+  const mockAutopecasTransferencia = [
     {
       id: 1,
-      validacao: "Aprovado",
+      validacao: "Em Transferência",
+      descricao: "Filtro de Óleo",
+      codPublico: "FO123",
+      fabrica: "Fram",
+      marca: "Fram",
+      utilizacao: "Motor",
+      categoria: "Filtros",
+      grupo: "Lubrificação",
+      disponivel: "Sim",
+      qtd: 20,
+      situacao: "Novo",
+      status: 0,
+    },
+    {
+      id: 2,
+      validacao: "A Transferir",
+      descricao: "Pastilha de Freio Dianteira",
+      codPublico: "PF456",
+      fabrica: "Bosch",
+      marca: "Bosch",
+      utilizacao: "Freios",
+      categoria: "Pastilhas",
+      grupo: "Sistema de Freios",
+      disponivel: "Sim",
+      qtd: 15,
+      situacao: "Em estoque",
+      status: 0,
+    },
+    {
+      id: 3,
+      validacao: "Em Transferência",
+      descricao: "Amortecedor Traseiro",
+      codPublico: "AT789",
+      fabrica: "Cofap",
+      marca: "Cofap",
+      utilizacao: "Suspensão",
+      categoria: "Amortecedores",
+      grupo: "Suspensão",
+      disponivel: "Não",
+      qtd: 0,
+      situacao: "Indisponível",
+      status: 0,
+    },
+    {
+      id: 4,
+      validacao: "Em Transferência",
+      descricao: "Bateria 60Ah",
+      codPublico: "BT101",
+      fabrica: "Moura",
+      marca: "Moura",
+      utilizacao: "Elétrica",
+      categoria: "Baterias",
+      grupo: "Sistema Elétrico",
+      disponivel: "Sim",
+      qtd: 5,
+      situacao: "Novo",
+      status: 0,
+    },
+    {
+      id: 5,
+      validacao: "Em Transferência",
+      descricao: "Correia Dentada",
+      codPublico: "CD202",
+      fabrica: "Gates",
+      marca: "Gates",
+      utilizacao: "Motor",
+      categoria: "Correias",
+      grupo: "Distribuição",
+      disponivel: "Sim",
+      qtd: 8,
+      situacao: "Novo",
+      status: 0,
+    },
+  ];
+
+  const mockAutopecasPendente = [
+    {
+      id: 1,
+      validacao: "Pendente",
       descricao: "Filtro de Óleo",
       codPublico: "FO123",
       fabrica: "Fram",
@@ -66,7 +144,7 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
     },
     {
       id: 3,
-      validacao: "Aprovado",
+      validacao: "Pendente",
       descricao: "Amortecedor Traseiro",
       codPublico: "AT789",
       fabrica: "Cofap",
@@ -81,7 +159,7 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
     },
     {
       id: 4,
-      validacao: "Reprovado",
+      validacao: "Pendente",
       descricao: "Bateria 60Ah",
       codPublico: "BT101",
       fabrica: "Moura",
@@ -96,7 +174,7 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
     },
     {
       id: 5,
-      validacao: "Aprovado",
+      validacao: "Pendente",
       descricao: "Correia Dentada",
       codPublico: "CD202",
       fabrica: "Gates",
@@ -110,7 +188,9 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
       status: 0,
     },
   ];
-  const filteredItems = mockAutopecas.filter((item) => item.descricao.includes(search));
+  const filteredItems = mockAutopecasTransferencia.filter((item) => item.descricao.includes(search));
+  const filteredItemsPendentes = mockAutopecasPendente.filter((item) => item.descricao.includes(search));
+
   const handleSubmitManual = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -139,7 +219,6 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
   };
 
   const handleSelectCadastradoItem = (item: any) => {
-    // Convert the selected autopeca to an ApprovalItem
     const newItem: ApprovalItem = {
       id: `item-${Date.now()}`,
       itemEstoque: item.codPublico,
@@ -159,73 +238,98 @@ export const AdicionarItemsModal = ({ isOpen, onClose, onAddItem }: AddItemModal
         <DialogHeader>
           <DialogTitle className="text-xl font-medium">Adicionar Item</DialogTitle>
         </DialogHeader>
-        <Tabs defaultValue="manual" value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col flex-grow">
+        <Tabs defaultValue="itens pendentes" value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col flex-grow">
           <TabsList className="grid grid-cols-3 mb-4">
-            <TabsTrigger value="manual">MANUAL</TabsTrigger>
-            <TabsTrigger value="cadastrado">CADASTRADO</TabsTrigger>
-            <TabsTrigger value="providencia">PROVIDÊNCIA COMPRA</TabsTrigger>
+            <TabsTrigger value="itens pendentes">ITENS PENDENTES</TabsTrigger>
+            <TabsTrigger value="transferencia">TRANSFERÊNCIA</TabsTrigger>
+            <TabsTrigger value="providencia">ITENS | PROVIDÊNCIA DE COMPRA</TabsTrigger>
           </TabsList>
-
           {/* Área de conteúdo fixa, impedindo rolagem desnecessária */}
           <div className="flex-grow flex flex-col h-full overflow-hidden">
-            {/* Aba MANUAL */}
-            <TabsContent value="manual" className="mt-0">
-              <form onSubmit={handleSubmitManual} className="flex flex-col">
+            <TabsContent value="itens pendentes" className="mt-0">
+              <form className="flex flex-col">
                 <div className="mb-4">
-                  <h3 className="text-sm font-medium mb-4">Preencha os dados do item abaixo:</h3>
-
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="codigo">Código *</Label>
-                      <Input
-                        id="codigo"
-                        required
-                        value={formData.codigo}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="marca">Marca *</Label>
-                      <Input
-                        id="marca"
-                        required
-                        value={formData.marca}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="descricao">Descrição *</Label>
-                      <Input
-                        id="descricao"
-                        required
-                        value={formData.descricao}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="qtd">Qtd *</Label>
-                      <Input
-                        id="qtd"
-                        type="number"
-                        required
-                        value={formData.qtd}
-                        onChange={handleInputChange}
-                      />
-                    </div>
+                  <h3 className="text-sm font-medium mb-4">Selecione o item cadastrado:</h3>
+                  <div className="flex items-center space-x-2 mb-4">
+                    <Input onChange={(e) => setSearch(e.target.value)} id="searchItemGeneral" placeholder="Pesquisar item..." className="flex-grow" />
+                    <Button type="button" className="bg-gray-300 hover:bg-gray-400 text-black px-4">
+                      <Search />
+                    </Button>
+                  </div>
+                  {/* Tabela com Campos de Pesquisa */}
+                  <div className="border rounded-md overflow-auto max-h-72">
+                    <table className="w-full text-sm text-left border-collapse">
+                      <thead className="bg-gray-100">
+                        <tr>
+                          <th className="border px-2 py-1">Validação</th>
+                          <th className="border px-2 py-1">Descrição</th>
+                          <th className="border px-2 py-1">Cód Público</th>
+                          <th className="border px-2 py-1">Fábrica</th>
+                          <th className="border px-2 py-1">Marca</th>
+                          <th className="border px-2 py-1">Utilização</th>
+                          <th className="border px-2 py-1">Categoria</th>
+                          <th className="border px-2 py-1">Grupo</th>
+                          <th className="border px-2 py-1">Disponível</th>
+                          <th className="border px-2 py-1">Qtd</th>
+                        </tr>
+                        <tr>
+                          {/* Campos de Pesquisa Individuais */}
+                          <th className="border px-2 py-1"><Input id="searchValidacao" placeholder="Validaçao..." /></th>
+                          <th className="border px-2 py-1"><Input id="searchDescricao" placeholder="Descrição..." /></th>
+                          <th className="border px-2 py-1"><Input id="searchCodPublico" placeholder="Cód Publico..." /></th>
+                          <th className="border px-2 py-1"><Input id="searchFabrica" placeholder="Fábrica..." /></th>
+                          <th className="border px-2 py-1"><Input id="searchMarca" placeholder="Marca..." /></th>
+                          <th className="border px-2 py-1"><Input id="searchUtilizacao" placeholder="Utilização..." /></th>
+                          <th className="border px-2 py-1"><Input id="searchCategoria" placeholder="Categoria..." /></th>
+                          <th className="border px-2 py-1"><Input id="searchGrupo" placeholder="Grupo..." /></th>
+                          <th className="border px-2 py-1"><Input id="searchDisponivel" placeholder="Disponível..." /></th>
+                          <th className="border px-2 py-1"><Input id="searchQtd" placeholder="Qtd..." /></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredItemsPendentes.length > 0 ? (
+                          filteredItemsPendentes.map((item) => (
+                            <tr
+                              key={item.id}
+                              className="hover:bg-gray-100 cursor-pointer"
+                              onClick={() => handleSelectCadastradoItem(item)}
+                            >
+                              <td className="border px-2 py-1">{item.validacao}</td>
+                              <td className="border px-2 py-1">{item.descricao}</td>
+                              <td className="border px-2 py-1">{item.codPublico}</td>
+                              <td className="border px-2 py-1">{item.fabrica}</td>
+                              <td className="border px-2 py-1">{item.marca}</td>
+                              <td className="border px-2 py-1">{item.utilizacao}</td>
+                              <td className="border px-2 py-1">{item.categoria}</td>
+                              <td className="border px-2 py-1">{item.grupo}</td>
+                              <td className="border px-2 py-1">{item.disponivel}</td>
+                              <td className="border px-2 py-1">{item.qtd}</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={11} className="text-center text-gray-500 py-2">
+                              Nenhum item encontrado
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800 text-white py-2 uppercase">
-                  Adicionar Item
+                <Button
+                  type="button"
+                  className="w-full bg-blue-900 hover:bg-blue-800 text-white py-2 uppercase"
+                  onClick={onClose}
+                >
+                  Cancelar
                 </Button>
               </form>
             </TabsContent>
-
+  
             {/* Aba CADASTRADO */}
-            <TabsContent value="cadastrado" className="mt-0">
+            <TabsContent value="transferencia" className="mt-0">
               <form className="flex flex-col">
                 <div className="mb-4">
                   <h3 className="text-sm font-medium mb-4">Selecione o item cadastrado:</h3>

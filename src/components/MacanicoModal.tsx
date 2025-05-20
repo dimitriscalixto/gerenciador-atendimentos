@@ -1,3 +1,6 @@
+import type { Servicos } from "@/types/servicos";
+import { useMockData } from "./contexts/atendimentoContext";
+import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -12,11 +15,17 @@ interface MecanicoModalProps {
 }
 
 export const MecanicoModal = ({ isOpen, onClose, items, atendimentoId }: MecanicoModalProps) => {
-  console.log(items)
-  const [servicos, setServicos] = useState<
-    { itemId: string; descricao: string; valorServico: string; valorServicoMecanico: string }[]
-  >([]);
+  const { mockData, setMockData } = useMockData();
+  const [servicos, setServicos] = useState<Servicos[]>([]);
 
+  const handleEnviar = () => {
+    const atendimento = mockData.map((atendimento) =>
+      parseInt(atendimento.id) === atendimentoId
+        ? { ...atendimento, status: 4 }
+        : atendimento
+    );
+    setMockData(atendimento)
+  }
   useEffect(() => {
     if (isOpen) {
       const novosServicos = items.map((item) => ({
@@ -75,6 +84,7 @@ export const MecanicoModal = ({ isOpen, onClose, items, atendimentoId }: Mecanic
               ))}
             </tbody>
           </table>
+          <Button className="mt-4" onClick={() => handleEnviar()}>Enviar</Button>
         </div>
       </DialogContent>
     </Dialog>

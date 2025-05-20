@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { ArrowRight, ArrowDown, Plus, PlusCircle, Plane, Trash } from 'lucide-react';
 import {
   Dialog,
@@ -17,6 +16,9 @@ import { useMockFornecedorData } from './contexts/fornecedorContext';
 import { MecanicoModal } from './MacanicoModal';
 import type { Fornecedor } from '@/types/fornecedor';
 import { SelecionarPropostasModal } from './selecionarPropostasModal.tsx';
+import ApprovalPrintLayout from './ApprovalPrintLayout';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs.tsx';
+
 
 interface ApprovalItemsModalProps {
   isOpen: boolean;
@@ -45,8 +47,14 @@ const ApprovalItemsModal = ({ isOpen, onClose, items, onAddItem, atendimentoId }
   const atendimento = mockData.filter((atendimento) => parseInt(atendimento.id) === atendimentoId);
   const [seletecFornecedorid, setSelectedFornecedorId] = useState(null);
   const [isMecanicoModalOpen, setIsMecanicoModalOpen] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState<'transferencia' | 'providencia'>('transferencia');
+  const [dataHoraImpressao] = useState(() => {
+    const now = new Date();
+    return now.toLocaleString('pt-BR');
+  });
+
   const handleFornecedorModalOpen = (itemId: string, fornecedorId: number) => {
-    console.log(fornecedorId)
     setSelectedItemId(itemId);
     setSelectedFornecedorId(fornecedorId)
     setFornecedorModalOpen(true);
@@ -84,47 +92,83 @@ const ApprovalItemsModal = ({ isOpen, onClose, items, onAddItem, atendimentoId }
     setMockFornecedorData(atualizados);
   };
 
-
-
   const handleAprovarCliente = (atendimentoId: number) => {
     const atendimento = mockData.map((atendimento) =>
       parseInt(atendimento.id) === atendimentoId
         ? { ...atendimento, status: 2 }
         : atendimento
     );
-    console.log(atendimento)
     const itensAprovados = items.map(item => ({ ...item, aprovado: true }));
-    console.log(itensAprovados)
     setItensAprovados(itensAprovados);
     setMockData(atendimento);
   }
+
+  // Função para preparar os dados no formato esperado pelo layout de impressão
+  const getPrintItems = () => {
+    return items.map((item) => ({
+      id: item.id,
+      descricao: item.descricao,
+      marca: '',
+      referenciaFornecedor: '',
+      quantidade: Number(item.quantidade),
+      precoUnitario: Number(item.valorUnitario),
+      valorTotal: Number(item.valorUnitario) * Number(item.quantidade),
+    }));
+  };
+
+  const handlePrint = () => {
+    const printWindow = window.open('', '', 'height=800,width=1200');
+    if (printWindow) {
+      printWindow.document.write('<html><head><title>Imprimir</title>');
+      printWindow.document.write('<style>body{font-family:sans-serif;} table{width:100%;border-collapse:collapse;} th,td{border:1px solid #ccc;padding:8px;} th{background:#f3f3f3;}</style>');
+      printWindow.document.write('</head><body>');
+      printWindow.document.write('<div id="print-root"></div>');
+      printWindow.document.write('</body></html>');
+      printWindow.document.close();
+      setTimeout(() => {
+        if (printWindow.document) {
+          printWindow.document.getElementById('print-root').innerHTML = printRef.current.innerHTML;
+          printWindow.focus();
+          printWindow.print();
+          printWindow.close();
+        }
+      }, 500);
+    }
+  };
 
   return (
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
         <DialogContent className="max-w-[96vw] w-full max-h-[90vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle className="text-xl font-medium">{atendimento[0]?.status === 0 ? 'Em andamento' : atendimento[0]?.status === 1 ? 'Itens Aguardando Aprovação' : atendimento[0]?.status === 2 ? 'Autorizada' : 'Entrega Mecânico'}</DialogTitle>
+            <DialogTitle className="text-xl font-medium">{atendimento[0]?.status === 0 ? 'Em andamento' : atendimento[0]?.status === 1 ? 'Itens Aguardando Aprovação' : atendimento[0]?.status === 2 ? 'Autorizada' : 'Entrega Mecânico'} | Atendimento # {atendimentoId}</DialogTitle>
           </DialogHeader>
 
           <div className="mt-2">
             <div className="flex gap-2 mb-4">
               {atendimento[0]?.status <= 0 ?
-                <Button
-                  className="text-gray-800 font-medium rounded flex items-center gap-2"
-                  variant="outline"
-                  onClick={() => setIsAddItemModalOpen(true)}
-                >
-                  Adicionar Item
-                </Button> : ``}
+                <>
+                </> : ``}
               {atendimento[0]?.status === 0 ?
-                <Button
-                  className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded"
-                  variant="outline"
-                  onClick={() => handleAprovarAtendimento(atendimentoId)}
-                >
-                  Concluir / Enviar para Aprovação
-                </Button>
+                <>
+                  <Button
+                    className="text-gray-800 font-medium rounded flex items-center gap-2"
+                    variant="outline"
+                    onClick={() => setIsAddItemModalOpen(true)}
+                  >
+                    Adicionar Item
+                  </Button>
+                  <Button
+                    className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded"
+                    variant="outline"
+                    onClick={() => handleAprovarAtendimento(atendimentoId)}
+                  >
+                    Concluir / Enviar para Aprovação
+                  </Button>
+                  {activeTab == 'transferencia' && (
+                    <Button>Gerar Transferência</Button>
+                  )}
+                </>
                 : atendimento[0]?.status === 1 ?
                   <div>
                     <Button
@@ -141,14 +185,123 @@ const ApprovalItemsModal = ({ isOpen, onClose, items, onAddItem, atendimentoId }
                       Cancelar
                     </Button>
                   </div>
-                  : <div>
-                    <Button onClick={() => setIsMecanicoModalOpen(true)}>
-                      Enviar Para o Mecânico
-                    </Button>
-                  </div>
+                  : atendimento[0]?.status === 2 ?
+                  <div>
+                  <Button onClick={() => setIsMecanicoModalOpen(true)}>
+                    Enviar Para o Mecânico
+                  </Button>
+                </div>
+                : atendimento[0]?.status === 4 ?
+                <Button onClick={handlePrint}>
+                  Imprimir
+                </Button>
+                : ''
               }
             </div>
+            <Tabs 
+            className="w-full flex flex-col flex-grow"
+            value={activeTab}
+            onValueChange={(value) => setActiveTab(value as 'transferencia' | 'providencia')}
+            >
+              <TabsList>
+              <TabsTrigger value="transferencia">TRANSFERÊNCIA</TabsTrigger>
+              <TabsTrigger value="providencia">ITENS | PROVIDÊNCIA DE COMPRA</TabsTrigger>
+              </TabsList>
+            
+            <TabsContent value='transferencia'>
+            <div className="border rounded overflow-hidden">
+              <div className="max-h-[500px] overflow-auto">
+                <table className="min-w-[1200px] table-auto divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        N SOLICITAÇÃO
+                        <ArrowDown className="inline ml-1 w-3 h-3 text-gray-400" />
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        ITEM
+                        <ArrowDown className="inline ml-1 w-3 h-3 text-gray-400" />
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        CÓDIGO
+                        <ArrowDown className="inline ml-1 w-3 h-3 text-gray-400" />
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        MARCA
+                        <ArrowDown className="inline ml-1 w-3 h-3 text-gray-400" />
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        DESCRIÇÃO
+                        <ArrowDown className="inline ml-1 w-3 h-3 text-gray-400" />
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        QTD
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Situação
+                      </th>
+                      {atendimento[0]?.status === 1 && (
+                        <>
+                          <th className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Valor de Compra</th>
+                          <th className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Valor de Venda</th>
+                          <th className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rentabilidade</th>
+                        </>
+                      )}
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        AÇÃO
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {items.length > 0 ? (
+                      items.map((item) => {
+                        const filteredFornecedores = mockFornecedorData.filter(
+                          (fornecedor) =>
+                            fornecedor.atendimentoId === atendimentoId &&
+                            fornecedor.itemId === item.id
+                        );
+                        return (
+                          <tr key={item.id}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{item.id}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.descricao}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.id}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.descricao}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.descricao}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.quantidade}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {atendimento[0]?.status === 0
+                                ? 'Em andamento'
+                                : atendimento[0]?.status === 1
+                                  ? 'Itens Aguardando Aprovação'
+                                  : atendimento[0].status === 2
+                                    ? 'Autorizada'
+                                    : 'Entrega Mecânico'}
+                            </td>
 
+                            {atendimento[0]?.status === 1 && (
+                              <>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">10</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">20</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">10</td>
+                              </>
+                            )}
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Ação</td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr>
+                        <td colSpan={8} className="px-6 py-4 text-center text-sm text-gray-500">
+                          Nenhum item aguardando aprovação
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            </TabsContent>
+            <TabsContent value='providencia'>
             <div className="border rounded overflow-hidden">
               <div className="max-h-[500px] overflow-auto">
                 <table className="min-w-[1200px] table-auto divide-y divide-gray-200">
@@ -318,10 +471,11 @@ const ApprovalItemsModal = ({ isOpen, onClose, items, onAddItem, atendimentoId }
                       </tr>
                     )}
                   </tbody>
-
                 </table>
               </div>
             </div>
+            </TabsContent>
+            </Tabs>
           </div>
         </DialogContent>
       </Dialog>
@@ -349,6 +503,21 @@ const ApprovalItemsModal = ({ isOpen, onClose, items, onAddItem, atendimentoId }
         propostas={propostasParaSelecionar}
         onConfirm={handleConfirmarAprovacaoSelecionadas}
       />
+      <div style={{ display: 'none' }}>
+        <ApprovalPrintLayout
+          ref={printRef}
+          items={getPrintItems()}
+          fornecedores={filteredFornecedor}
+          atendimento={{
+            id: Number(atendimento[0]?.id) || 0,
+            observacao: '',
+            condicaoPagamento: '',
+            prazoEntrega: '',
+            formaRemessa: '',
+          }}
+          dataHoraImpressao={dataHoraImpressao}
+        />
+      </div>
     </>
   );
 };

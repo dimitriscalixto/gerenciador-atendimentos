@@ -33,11 +33,11 @@ const DataTable = ({ className, onAddRow, tableData, onApprovalClick }: DataTabl
     }
   };
 
-  const StatusIcon = ({ status, rowId, columnType, atendimentoId}: { status: number, rowId: string, columnType: string, atendimentoId: number}) => {
+  const StatusIcon = ({ status, rowId, columnType, atendimentoId }: { status: number, rowId: string, columnType: string, atendimentoId: number }) => {
     const handleClick = () => {
-        handleOpenAprovarItemModal(atendimentoId);
+      handleOpenAprovarItemModal(atendimentoId);
     };
-    console.log(rowId)
+    console.log(atendimentoId + status)
     if (parseInt(rowId) === status) {
       return (
         <div className="flex justify-center">
@@ -47,21 +47,21 @@ const DataTable = ({ className, onAddRow, tableData, onApprovalClick }: DataTabl
         </div>
       );
     }
-    if(status > parseInt(rowId))
-    return (
-    <div className="flex justify-center">
-      <div className="status-icon p-1 bg-marco-success/10 rounded-full cursor-pointer">
-        <Check className="w-4 h-4 text-marco-success" />
-      </div>
-    </div>
-    )
+    if (status > parseInt(rowId))
+      return (
+        <div className="flex justify-center">
+          <div className="status-icon p-1 bg-marco-success/10 rounded-full cursor-pointer">
+            <Check className="w-4 h-4 text-marco-success" />
+          </div>
+        </div>
+      )
 
     return (
       <div className="flex justify-center">
-      <div className="status-icon  bg-marco-error/10 p-1 rounded-full cursor-pointer">
-        <X className="w-4 h-4 text-marco-error" />
+        <div className="status-icon  bg-marco-error/10 p-1 rounded-full cursor-pointer">
+          <X className="w-4 h-4 text-marco-error" />
+        </div>
       </div>
-    </div>
     )
 
   }
@@ -113,7 +113,10 @@ const DataTable = ({ className, onAddRow, tableData, onApprovalClick }: DataTabl
                   <StatusIcon status={row.status} rowId={'3'} atendimentoId={parseInt(row.id)} columnType="envioMecanico" />
                 </td>
                 <td className={cellClasses}>
-                  <StatusIcon status={row.status} rowId={'4'} atendimentoId={parseInt(row.id)}columnType="faturamento" />
+                  <div className='flex justify-center items-center'>
+                    <StatusIcon status={row.status} rowId={'4'} atendimentoId={parseInt(row.id)} columnType="faturamento" />
+                    <div className="w-3 h-3 ml-1 rounded-full bg-red-400 animate-pulse"></div>
+                  </div>
                 </td>
               </tr>
             ))}
